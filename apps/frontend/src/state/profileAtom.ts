@@ -1,22 +1,23 @@
-import {atom} from 'recoil'
-import z from 'zod'
-const localStorageProfileSchema = z.object({
-    username : z.string(),
-    id : z.string()
-})
-export const profileAtom = atom<undefined | {username:string,id:string}>({
-    key :"profile",
-    default : getProfile()
+import { atom } from "recoil";
+
+function getUserId(){
+    const userId = localStorage.getItem("userId")
+    if(!userId) return undefined
+    else return userId
+}
+export const profileAtom = atom<undefined | string>({
+    key : "profile",
+    default : getUserId()
 })
 
-function getProfile(){
-    const profileString = localStorage.getItem("profile")
-    if(profileString==null) return undefined;
-    try {
-        const profile = localStorageProfileSchema.parse(JSON.parse(profileString))
-        return profile
-    } catch (error) {
-        console.log(error)
-        return  undefined
-    }
-}
+
+export const profilesAtom = atom<string[]>({
+    key : "profilesArray",
+    default : []
+})
+
+
+export const selectedProfileAtom = atom<undefined | string>({
+    key : "selectedUserId",
+    default : undefined
+})

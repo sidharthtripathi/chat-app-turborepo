@@ -17,40 +17,41 @@ const express_1 = __importDefault(require("express"));
 const zod_1 = require("zod");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const authSchema_1 = require("../schema/authSchema");
+const schema_1 = require("schema");
 const prisma_1 = require("../lib/prisma");
 const library_1 = require("@prisma/client/runtime/library");
 const authRouter = express_1.default.Router();
 exports.authRouter = authRouter;
 authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, password } = authSchema_1.loginSignupSchema.parse(req.body);
+        const { userId, password } = schema_1.loginSignupSchema.parse(req.body);
         const user = yield prisma_1.prisma.user.findUnique({
-            where: { username },
-            select: { username: true, id: true, password: true }
+            where: { userId },
+            select: { userId: true, password: true }
         });
         if (!user || !(user && bcrypt_1.default.compareSync(password, user.password))) {
             res.statusMessage = "WRONG CREDENTIALS";
             return res.status(400).end();
         }
-        const accessToken = jsonwebtoken_1.default.sign({ username, id: user.id }, process.env.JWT_SECRET);
-        return res.json({ username, id: user.id }).cookie("access-token", accessToken).status(201).end();
+        const accessToken = jsonwebtoken_1.default.sign({ userId }, process.env.JWT_SECRET);
+        return res.cookie("access-token", accessToken, { httpOnly: true, expires: new Date(Date.now() + 900000000) }).json({ userId }).status(201);
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {
             res.statusMessage = "INVALID PAYLOAD";
             res.status(400).end();
         }
+        console.log(error);
         res.status(500).end();
     }
 }));
 authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, password } = authSchema_1.loginSignupSchema.parse(req.body);
+        const { userId, password } = schema_1.loginSignupSchema.parse(req.body);
         yield prisma_1.prisma.user.create({
-            data: { username, password: bcrypt_1.default.hashSync(password, 10) }
+            data: { userId, password: bcrypt_1.default.hashSync(password, 10) }
         });
-        return res.status(201).json({ username });
+        return res.status(201).json({ userId });
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {

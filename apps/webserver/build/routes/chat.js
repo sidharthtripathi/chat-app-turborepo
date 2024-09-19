@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.chatRouter = void 0;
 const express_1 = require("express");
 const prisma_1 = require("../lib/prisma");
-const main_1 = require("../main");
+const redis_1 = require("../lib/redis");
 const zod_1 = __importDefault(require("zod"));
 const querySchema = zod_1.default.object({
     createdAt: zod_1.default.string(),
@@ -24,62 +24,27 @@ const querySchema = zod_1.default.object({
 const chatRouter = (0, express_1.Router)();
 exports.chatRouter = chatRouter;
 chatRouter.get('/chats', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const conversations = yield prisma_1.prisma.user.findUnique({
-        where: { id: res.locals.id },
-        select: {
-            conversations: {
-                select: {
-                    id: true,
-                    members: {
-                        select: {
-                            username: true,
-                        },
-                        where: { NOT: { id: res.locals.id } }
-                    },
-                    messages: {
-                        select: {
-                            content: true,
-                        },
-                        orderBy: { createdAt: "asc" },
-                        take: 1
-                    }
-                }
-            }
-        }
+    // getting all the chats from DB and redis
+    if (!redis_1.redisDB.isOpen)
+        yield redis_1.redisDB.connect();
+    const redisMsgs = yield redis_1.redisDB.ft.search("idx:messages", "*", { SORTBY: { BY: "createdAt", DIRECTION: "ASC" } });
+    const dbMsgs = yield prisma_1.prisma.message.findMany({
+        where: { OR: [{ fromUserId: res.locals.userId }, { toUserId: res.locals.userId }] },
+        select: { content: true, createdAt: true, fromUserId: true, toUserId: true, id: true },
+        orderBy: { createdAt: "asc" }
     });
-    return res.json(conversations);
-}));
-chatRouter.get("/chats/:chatid", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // check if the user is part of convo or not
-    // getting particular chat from redis
-    try {
-        const { createdAt, conversationId } = querySchema.parse(req.query);
-        return (yield getMessages(createdAt, conversationId));
-    }
-    catch (error) {
-        return res.json("INVALID INPUT").status(400);
-    }
-}));
-function getMessages(createdAt, converstaionId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const messages = yield main_1.redisDB.ft.search("idx:messages", `@createdAt:[* ${parseInt(createdAt)}] @conversationId:${converstaionId} SORTBY createdAt ASC LIMIT 0 50`);
-        if (messages.total == 50)
-            return messages.documents;
-        const dbMessages = yield prisma_1.prisma.conversation.findUnique({
-            where: { id: converstaionId, createdAt },
-            select: {
-                messages: {
-                    select: {
-                        content: true,
-                        createdAt: true,
-                        id: true,
-                        senderId: true,
-                    },
-                    take: 50 - messages.total,
-                    orderBy: { createdAt: "asc" }
-                }
-            }
+    const jsonRes = [];
+    dbMsgs.forEach(msg => {
+        jsonRes.push({ id: msg.id, from: msg.fromUserId, to: msg.toUserId, content: msg.content, createdAt: msg.createdAt });
+    });
+    if (redisMsgs.total > 0) {
+        redisMsgs.documents.forEach(doc => {
+            jsonRes.push({ id: doc.id, content: doc.value.content, from: doc.value.from, to: doc.value.to, createdAt: new Date(parseInt(doc.value.createdAt)) });
         });
-        //  return messages.documents.concat(dbMessages?.messages)
-    });
-}
+    }
+    return res.json(jsonRes);
+}));
+chatRouter.get('/chats/:userId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.userId;
+    // getting all chats with userId from DB and redis
+}));

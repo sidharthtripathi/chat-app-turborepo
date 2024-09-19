@@ -5,13 +5,16 @@ import { authRouter } from './routes/auth'
 import { chatRouter } from './routes/chat'
 import cookieParser from 'cookie-parser'
 import jwt from 'jsonwebtoken'
-import {createClient, SchemaFieldTypes} from 'redis'
-const redisDB = createClient()
+import {SchemaFieldTypes} from 'redis'
+import {jwtPayloadSchema} from 'schema'
+import { redisDB } from './lib/redis'
+import { profileRouter } from './routes/profile'
 const server = express()
 // cors
 server.use(cors({
     origin : "http://localhost:5173",
-    methods : ["GET","POST"]
+    methods : ["GET","POST"],
+    credentials : true
 }))
 server.use(cookieParser())
 server.use(bodyParser.json())
@@ -24,26 +27,33 @@ server.use('/api',async(req,res,next)=>{
     const accessToken = req.cookies["access-token"]
     if(!accessToken) return res.json('INVALID TOKEN').status(401)
     try {
-        const {username,id} = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
-        res.locals = {username,id}
+        const payload = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
+        const {userId} = jwtPayloadSchema.parse(payload)
+        res.locals = {userId}
         next()
     } catch (error) {
         return res.json('INVALID TOKEN').status(401)
     }
 },chatRouter)
 
+server.use('/api',profileRouter)
+
 
 async function main(){
     // creating the index for messages hash
-    try {
+    try { 
+        await redisDB.connect()
         await redisDB.ft.create("idx:messages",{
+            id : {
+                type : SchemaFieldTypes.TEXT,
+            },
             content : {
                 type : SchemaFieldTypes.TEXT,
             },
             from : {
                 type : SchemaFieldTypes.TEXT,
             },
-            conversationId : {
+            to : {
                 type : SchemaFieldTypes.TEXT,
             },
             createdAt : {
@@ -56,11 +66,12 @@ async function main(){
         })
         
     } catch (error) {
+        console.log(error)
         console.log("some error occured")
-    }   
+    }
+    server.listen(3000,()=>{
+        console.log("webserver started...")
+    })
 }
-server.listen(3000,()=>{
-    console.log("webserver started...")
-})
-// main()
-export {redisDB}
+
+main()

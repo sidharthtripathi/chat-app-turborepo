@@ -15,27 +15,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cookie_1 = __importDefault(require("cookie"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const schema_1 = require("schema");
 const ws_1 = require("ws");
 const http_1 = __importDefault(require("http"));
-const messageSchema_1 = require("./schema/messageSchema");
-const zod_1 = require("zod");
+const schema_2 = require("schema");
 const ioredis_1 = require("ioredis");
+dotenv_1.default.config();
 const pubClient = new ioredis_1.Redis();
 const subClient = new ioredis_1.Redis();
 const redisDB = new ioredis_1.Redis();
 const connectedSocket = new Map();
-dotenv_1.default.config();
 const server = http_1.default.createServer();
 server.on('upgrade', (req, socket, head) => {
-    console.log("req came");
     if (!(req.headers.cookie))
         return socket.end();
     const cookies = cookie_1.default.parse(req.headers.cookie);
     const accesstoken = cookies["access-token"];
     try {
-        const payload = jsonwebtoken_1.default.verify(accesstoken, process.env.JWT_SECRET);
-        req.username = payload.username;
-        req.id = payload.id;
+        const { userId } = schema_1.jwtPayloadSchema.parse(jsonwebtoken_1.default.verify(accesstoken, process.env.JWT_SECRET));
+        req.userId = userId;
     }
     catch (error) {
         socket.end();
@@ -43,49 +41,44 @@ server.on('upgrade', (req, socket, head) => {
 });
 const wss = new ws_1.WebSocketServer({ server });
 wss.on('connection', (socket, req) => {
-    socket.username = req.username;
-    socket.id = req.id;
-    connectedSocket.set(socket.username, socket);
+    socket.userId = req.userId;
+    connectedSocket.set(socket.userId, socket);
     // when socket goes offline
     socket.onclose = (e) => {
-        connectedSocket.delete(socket.username);
+        connectedSocket.delete(socket.userId);
     };
     socket.onmessage = (e) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
+        // check the payload
         try {
-            const msg = messageSchema_1.messageSchema.parse(e.data);
-            // check if socket is online
-            if (connectedSocket.has(msg.to))
-                (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify(Object.assign(Object.assign({}, msg), { from: socket.username })));
-            // else publish to redis
-            pubClient.publish("message", JSON.stringify(Object.assign(Object.assign({}, msg), { from: socket.username })));
-            // save msg to redis hash
-            yield redisDB.hset("messages:messageId", {
-                id: "id",
-                content: "some msg",
-                from: "someone",
-                conversationId: "someconvoId",
-                createdAt: Date.now()
-            });
+            const msg = schema_2.sentMessageSchema.parse(JSON.parse(e.data));
+            // send the msg
+            // check if reciever is online
+            const payload = JSON.stringify(Object.assign(Object.assign({}, msg), { from: socket.userId }));
+            if (connectedSocket.has(msg.to)) {
+                (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(payload);
+            }
+            else {
+                // publish to redis
+                pubClient.publish('message', payload);
+            }
+            // save the msg to redis hash
+            yield redisDB.hset(`messages:${msg.id}`, Object.assign(Object.assign({}, msg), { from: socket.userId }));
         }
         catch (error) {
-            if (error instanceof zod_1.ZodError)
-                console.log("INVALID SCHEMA");
+            console.log(error);
         }
     });
 });
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield subClient.connect();
         subClient.subscribe('message');
         subClient.on("message", (ch, message) => {
             var _a;
             const msg = JSON.parse(message);
-            // check if socket is connected to this
-            if (connectedSocket.has(msg.to))
-                (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(message);
+            (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(message);
         });
-        server.listen(3000, () => {
+        server.listen(4000, () => {
             console.log("server: http://localhost:3000");
         });
     });

@@ -1,45 +1,47 @@
-import { Avatar, AvatarImage,AvatarFallback } from '@/components/ui/avatar';
+import { Avatar,AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessagesFamily } from '@/state/MessagesAtom';
-import { profileAtom } from '@/state/profileAtom';
-import { wsState } from '@/state/socketAtom';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
 import {useRef} from 'react';
 import {v4 as uuid} from 'uuid'
-import { Link } from 'react-router-dom';
+import {sentMessageSchema} from 'schema'
+import z from 'zod'
 import TextareaAutosize from 'react-textarea-autosize';
-import { useRecoilState, useRecoilValue } from 'recoil';
-export function Chats({conversationId} : {conversationId : string}){
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { selectedProfileAtom } from '@/state/profileAtom';
+import { messagesFamily } from '@/state/messagesAtom';
+import { profileAtom } from '@/state/profileAtom';
+import { socketState } from '@/state/socketState';
+type sentMessageType = z.infer<typeof sentMessageSchema>
+export function Chats({userId} : {userId : string}){
+    const ws = useRecoilValue(socketState)
     const textAreaRef = useRef<null | HTMLTextAreaElement>(null)
+    const setSelectedUserId = useSetRecoilState(selectedProfileAtom)
+    const [messages,setMessages] = useRecoilState(messagesFamily(userId))
     const profile = useRecoilValue(profileAtom)
-    const [messages,setMessages] = useRecoilState(MessagesFamily(conversationId))
-    const ws = useRecoilValue(wsState)
-    
     return (
         <div className='p-2 flex flex-col justify-between h-screen '>
             <nav className='flex items-center gap-4'>
-                <Link to={"/chats"}>
-                    <ArrowLeftIcon className='size-6 cursor-pointer'/>
-                </Link>
-                
+                    <ArrowLeftIcon className='size-6 cursor-pointer'
+                    onClick={()=>{
+                        setSelectedUserId(undefined)
+                    }}/>
                 <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" />
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className='font-bold text-lg'>username</p>
+                    <p className='font-bold text-lg'>{userId}</p>
                     <span className='text-xs text-secondary-foreground'>online</span>
                 </div>
             </nav>
 
             <ScrollArea className='grow p-2'>
-                {
-                    messages.map(msg=>{
-                        if(msg.sender===profile?.id) return <SentMessage content={msg.content} key={msg.id} />
-                        else <ReceivedMessage content={msg.content} key={msg.id} />
-                    })
-                }
+                    {
+                        messages.map(msg=>{
+                            if(msg.from===profile) return <SentMessage content={msg.content} key={msg.id} />
+                            else return <ReceivedMessage content={msg.content} key={msg.id} />
+                        })
+                    }
             </ScrollArea>
 
             <div className='flex gap-2 items-end'>
@@ -49,17 +51,14 @@ export function Chats({conversationId} : {conversationId : string}){
                 <Button
                 onClick={()=>{
                     if(textAreaRef.current){
-                    const content = textAreaRef.current.value
-                    const sender = profile?.id as string
-                    const id = uuid()
-                    const createdAt = new Date()
-                    setMessages((p)=>[...p,{content,conversationId,sender, id,createdAt}])
-                    ws.send(JSON.stringify({
-                        content,
-                        sender,
-                        conversationId,
-                        createdAt
-                    }))
+                    const payload : sentMessageType = {
+                        content : textAreaRef.current.value,
+                        createdAt : Date.now(),
+                        id : uuid(),
+                        to : userId
+                    }
+                    setMessages(p=>([...p,{...payload,from:profile!}]))
+                    ws.send(JSON.stringify(payload))
                     textAreaRef.current.value = ""
                     }
                     
@@ -75,7 +74,7 @@ export function Chats({conversationId} : {conversationId : string}){
 function SentMessage({content} : {content:string}){
     
     return (
-        <div className='flex justify-end'>
+        <div className='flex justify-end my-1'>
             <span className='p-2 bg-secondary rounded-md'>{content}</span>
         </div>
     )
@@ -83,7 +82,7 @@ function SentMessage({content} : {content:string}){
 
 function ReceivedMessage({content} : {content:string}){
     return (
-        <div className='flex'>
+        <div className='flex my-1'>
             <span className='p-2 bg-primary text-primary-foreground rounded-md'>{content}</span>
         </div>
     )

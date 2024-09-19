@@ -2,7 +2,7 @@ import express from 'express'
 import { ZodError } from 'zod';
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { loginSignupSchema } from '../schema/authSchema';
+import { loginSignupSchema } from 'schema';
 import { prisma } from '../lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 const authRouter = express.Router()
@@ -10,23 +10,24 @@ const authRouter = express.Router()
 
 authRouter.post('/login',async(req,res)=>{
     try {
-        const {username,password} = loginSignupSchema.parse(req.body);
+        const {userId,password} = loginSignupSchema.parse(req.body);
         const user = await prisma.user.findUnique({
-            where : {username},
-            select:{username:true,id:true,password:true}
+            where : {userId},
+            select:{userId:true,password:true}
         })
         if(!user || !(user && bcrypt.compareSync(password,user.password))){ 
             res.statusMessage = "WRONG CREDENTIALS"
             return res.status(400).end()
         }
-        const accessToken = jwt.sign({username,id:user.id},process.env.JWT_SECRET as string)
+        const accessToken = jwt.sign({userId},process.env.JWT_SECRET as string)
 
-        return res.json({username,id:user.id}).cookie("access-token",accessToken).status(201).end()
+        return res.cookie("access-token",accessToken,{httpOnly:true,expires : new Date(Date.now()+900000000)}).json({userId}).status(201)
     } catch (error) {
         if(error instanceof ZodError){
             res.statusMessage = "INVALID PAYLOAD"
             res.status(400).end()
         }
+        console.log(error)
         res.status(500).end()  
     }
     
@@ -34,11 +35,11 @@ authRouter.post('/login',async(req,res)=>{
 
 authRouter.post('/signup',async (req,res)=>{
     try {
-        const {username,password} = loginSignupSchema.parse(req.body);
+        const {userId,password} = loginSignupSchema.parse(req.body);
         await prisma.user.create({
-            data : {username,password : bcrypt.hashSync(password,10)}
+            data : {userId,password : bcrypt.hashSync(password,10)}
         })
-        return res.status(201).json({username})
+        return res.status(201).json({userId})
     } catch (error) {
         if(error instanceof ZodError){
             res.statusMessage = "INVALID PAYLOAD"

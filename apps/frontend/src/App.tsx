@@ -1,10 +1,16 @@
 
+import { useRecoilValue } from "recoil"
+import { profileAtom } from "./state/profileAtom"
+import { Join } from "./pages/JoinPage"
+import ChatAppPage from "./pages/ChatAppPage"
+
+
 
 
 function App() {
-  return <div className="w-screen h-screen">
-    hello there
-  </div>
+const profile = useRecoilValue(profileAtom)
+  if(!profile) return <Join/>
+  else return <ChatAppPage/>
 }
 
 export default App

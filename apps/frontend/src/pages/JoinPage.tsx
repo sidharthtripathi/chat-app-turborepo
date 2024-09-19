@@ -9,27 +9,28 @@ import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { useToast } from "@/hooks/use-toast"
-import { useSetRecoilState } from 'recoil'
 import { profileAtom } from '@/state/profileAtom'
+import { useSetRecoilState } from 'recoil'
+
 export function Join() {
-  const setProfile = useSetRecoilState(profileAtom)
   const navigate = useNavigate()
   const { toast } = useToast()
   const [isLogin, setIsLogin] = useState(true)
   const [passwordHidden,togglePasswordVisibility] = useState(true)
   const [password, setPassword] = useState('')
   const [loading,setLoading] = useState(false)
-  const [username, setUsername] = useState('')
+  const [userId, setUserId] = useState('')
+  const setProfile = useSetRecoilState(profileAtom)
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true);
     if(isLogin){
       try {
-        const {data}  = await server.post('/login',{username,password})
-        setProfile(data)
-        localStorage.setItem("profile",JSON.stringify(data))
-        navigate('/')
+        const {data}  = await server.post('/api/login',{userId,password})
+        localStorage.setItem("userId",data.userId)
+        setProfile(data.userId)
+        navigate('/chats')
       } catch (error) {
         if(error instanceof AxiosError){
           // error msg here
@@ -42,7 +43,7 @@ export function Join() {
     }
     else{
       try {
-        await server.post('/signup',{username,password})
+        await server.post('/api/signup',{userId,password})
         toast({title :"Successfully Account Created"})
         setIsLogin(true)
       } catch (error) {
@@ -77,8 +78,8 @@ export function Join() {
                       id="username"
                       type="text"
                       placeholder="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -110,8 +111,8 @@ export function Join() {
                       id="username"
                       type="text"
                       placeholder="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
