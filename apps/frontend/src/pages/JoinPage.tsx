@@ -6,14 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { server } from '@/lib/axios'
 import { AxiosError } from 'axios'
-import { useNavigate } from 'react-router-dom'
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { useToast } from "@/hooks/use-toast"
 import { profileAtom } from '@/state/profileAtom'
 import { useSetRecoilState } from 'recoil'
 
 export function Join() {
-  const navigate = useNavigate()
   const { toast } = useToast()
   const [isLogin, setIsLogin] = useState(true)
   const [passwordHidden,togglePasswordVisibility] = useState(true)
@@ -30,7 +28,6 @@ export function Join() {
         const {data}  = await server.post('/api/login',{userId,password})
         localStorage.setItem("userId",data.userId)
         setProfile(data.userId)
-        navigate('/chats')
       } catch (error) {
         if(error instanceof AxiosError){
           // error msg here

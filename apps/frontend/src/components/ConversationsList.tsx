@@ -12,12 +12,15 @@ export default function ConversationList(){
   // get all the chats from server and setup the conversations
   const profile = useRecoilValue(profileAtom)
   const userIds = useRecoilValue(profilesAtom)
-  const {isLoading} = useQuery("chats",async()=>{
+  const {isLoading} = useQuery(['chats'],async()=>{
 
     const {data} = await server.get('/api/chats')
     parser(data,profile as string)
     return data
-  },{})
+  },{
+    refetchOnWindowFocus : false,
+    refetchOnMount : false,
+  })
   
    return (   
         <div className="flex flex-col h-screen container mx-auto">
