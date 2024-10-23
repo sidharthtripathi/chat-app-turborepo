@@ -34,7 +34,7 @@ authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.status(400).end();
         }
         const accessToken = jsonwebtoken_1.default.sign({ userId }, process.env.JWT_SECRET);
-        return res.cookie("access-token", accessToken, { httpOnly: true, expires: new Date(Date.now() + 900000000) }).json({ userId }).status(201);
+        return res.cookie("access-token", accessToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30 }).json({ userId }).status(201);
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {
@@ -66,3 +66,7 @@ authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, funct
             return res.status(500).end();
     }
 }));
+authRouter.post('/logout', (req, res) => {
+    res.clearCookie("access-token");
+    res.sendStatus(200);
+});

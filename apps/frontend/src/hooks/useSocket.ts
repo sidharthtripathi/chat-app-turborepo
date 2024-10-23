@@ -1,4 +1,8 @@
+import { WebSocketContext } from "@/context/wsContext";
+import { useContext } from "react";
+
 export function useSocket(){
-    const ws = new WebSocket("ws://localhost:4000")
-    return ws;
+    const ws = useContext(WebSocketContext)
+    if(!ws) throw new Error("wrap the component in WebSocketProvider")
+    else return ws
 }

@@ -1,13 +1,8 @@
 import { atom } from "recoil";
 
-function getUserId(){
-    const userId = localStorage.getItem("userId")
-    if(!userId) return undefined
-    else return userId
-}
-export const profileAtom = atom<undefined | string>({
+export const profileAtom = atom<null | string>({
     key : "profile",
-    default : getUserId()
+    default : localStorage.getItem("userId")
 })
 
 

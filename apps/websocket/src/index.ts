@@ -51,6 +51,7 @@ wss.on('connection',(socket:Socket,req:HTTPRequest)=>{
             }
             // save the msg to redis hash
             await redisDB.hset(`messages:${msg.id}`,{...msg,from:socket.userId})
+            console.log('saved to redis')
 
         } catch (error) {
             console.log(error)

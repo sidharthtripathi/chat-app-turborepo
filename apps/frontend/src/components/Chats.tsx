@@ -11,10 +11,11 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { selectedProfileAtom } from '@/state/profileAtom';
 import { messagesFamily } from '@/state/messagesAtom';
 import { profileAtom } from '@/state/profileAtom';
-import { socketState } from '@/state/socketState';
+import { useSocket } from '@/hooks/useSocket';
+
 type sentMessageType = z.infer<typeof sentMessageSchema>
 export function Chats({userId} : {userId : string}){
-    const ws = useRecoilValue(socketState)
+    const ws = useSocket()
     const textAreaRef = useRef<null | HTMLTextAreaElement>(null)
     const setSelectedUserId = useSetRecoilState(selectedProfileAtom)
     const [messages,setMessages] = useRecoilState(messagesFamily(userId))

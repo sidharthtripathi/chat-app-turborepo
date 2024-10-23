@@ -11,7 +11,7 @@ const chatRouter = Router()
 chatRouter.get('/chats',async(req,res)=>{
     // getting all the chats from DB and redis
     if(!redisDB.isOpen) await redisDB.connect()
-    const redisMsgs = await redisDB.ft.search("idx:messages","*",{SORTBY : {BY : "createdAt",DIRECTION : "ASC"}})
+    const redisMsgs = await redisDB.ft.search("idx:messages",`(@from:${res.locals.userId}) | (@to:${res.locals.userId})`,{SORTBY : {BY : "createdAt",DIRECTION : "ASC"},LIMIT : {from : 0,size : 10000}})
     const dbMsgs = await prisma.message.findMany({
         where : {OR : [{fromUserId : res.locals.userId},{toUserId : res.locals.userId}]},
         select : {content : true,createdAt : true,fromUserId : true,toUserId : true,id : true},

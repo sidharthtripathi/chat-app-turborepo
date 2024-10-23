@@ -25,5 +25,4 @@ export async function parser(msgs:Message[],id:string){
         setRecoil(messagesFamily(key),conversations[key])
     }
     setRecoil(profilesAtom,userIds)
-
 }

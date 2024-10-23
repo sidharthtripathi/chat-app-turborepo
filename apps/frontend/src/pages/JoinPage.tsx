@@ -8,17 +8,18 @@ import { server } from '@/lib/axios'
 import { AxiosError } from 'axios'
 import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { useToast } from "@/hooks/use-toast"
-import { profileAtom } from '@/state/profileAtom'
 import { useSetRecoilState } from 'recoil'
+import { profileAtom } from '@/state/profileAtom'
+
 
 export function Join() {
+  const setProfile = useSetRecoilState(profileAtom)
   const { toast } = useToast()
   const [isLogin, setIsLogin] = useState(true)
   const [passwordHidden,togglePasswordVisibility] = useState(true)
   const [password, setPassword] = useState('')
   const [loading,setLoading] = useState(false)
   const [userId, setUserId] = useState('')
-  const setProfile = useSetRecoilState(profileAtom)
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()

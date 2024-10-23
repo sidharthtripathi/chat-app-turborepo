@@ -27,7 +27,7 @@ chatRouter.get('/chats', (req, res) => __awaiter(void 0, void 0, void 0, functio
     // getting all the chats from DB and redis
     if (!redis_1.redisDB.isOpen)
         yield redis_1.redisDB.connect();
-    const redisMsgs = yield redis_1.redisDB.ft.search("idx:messages", "*", { SORTBY: { BY: "createdAt", DIRECTION: "ASC" } });
+    const redisMsgs = yield redis_1.redisDB.ft.search("idx:messages", `(@from:${res.locals.userId}) | (@to:${res.locals.userId})`, { SORTBY: { BY: "createdAt", DIRECTION: "ASC" }, LIMIT: { from: 0, size: 10000 } });
     const dbMsgs = yield prisma_1.prisma.message.findMany({
         where: { OR: [{ fromUserId: res.locals.userId }, { toUserId: res.locals.userId }] },
         select: { content: true, createdAt: true, fromUserId: true, toUserId: true, id: true },

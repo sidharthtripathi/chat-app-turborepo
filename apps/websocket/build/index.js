@@ -64,6 +64,7 @@ wss.on('connection', (socket, req) => {
             }
             // save the msg to redis hash
             yield redisDB.hset(`messages:${msg.id}`, Object.assign(Object.assign({}, msg), { from: socket.userId }));
+            console.log('saved to redis');
         }
         catch (error) {
             console.log(error);
