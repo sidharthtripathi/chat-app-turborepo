@@ -23,10 +23,12 @@ const redis_1 = require("redis");
 const schema_1 = require("schema");
 const redis_2 = require("./lib/redis");
 const profile_1 = require("./routes/profile");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const server = (0, express_1.default)();
 // cors
 server.use((0, cors_1.default)({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
     credentials: true
 }));
@@ -80,7 +82,7 @@ function main() {
             console.log(error);
             console.log("some error occured");
         }
-        server.listen(3000, () => {
+        server.listen(process.env.PORT || 3000, () => {
             console.log("webserver started...");
         });
     });

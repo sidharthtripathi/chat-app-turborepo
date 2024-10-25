@@ -1,6 +1,8 @@
 import {createClient} from 'redis'
 import { prisma } from './lib/prisma';
-const db = createClient()
+const db = createClient({
+    url : process.env.REDISDB_URL
+})
 type DBMessage = {
     id : string,
     createdAt : Date,

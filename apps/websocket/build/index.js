@@ -21,9 +21,9 @@ const http_1 = __importDefault(require("http"));
 const schema_2 = require("schema");
 const ioredis_1 = require("ioredis");
 dotenv_1.default.config();
-const pubClient = new ioredis_1.Redis();
-const subClient = new ioredis_1.Redis();
-const redisDB = new ioredis_1.Redis();
+const pubClient = new ioredis_1.Redis(process.env.REDIS_PUBSUB_URL);
+const subClient = new ioredis_1.Redis(process.env.REDIS_PUBSUB_URL);
+const redisDB = new ioredis_1.Redis(process.env.REDISDB_URL);
 const connectedSocket = new Map();
 const server = http_1.default.createServer();
 server.on('upgrade', (req, socket, head) => {
@@ -52,8 +52,6 @@ wss.on('connection', (socket, req) => {
         // check the payload
         try {
             const msg = schema_2.sentMessageSchema.parse(JSON.parse(e.data));
-            // send the msg
-            // check if reciever is online
             const payload = JSON.stringify(Object.assign(Object.assign({}, msg), { from: socket.userId }));
             if (connectedSocket.has(msg.to)) {
                 (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(payload);
@@ -79,8 +77,8 @@ function main() {
             const msg = JSON.parse(message);
             (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(message);
         });
-        server.listen(4000, () => {
-            console.log("server: http://localhost:3000");
+        server.listen(process.env.PORT || 4000, () => {
+            console.log("ws server is up");
         });
     });
 }

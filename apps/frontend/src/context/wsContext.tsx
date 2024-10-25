@@ -9,7 +9,7 @@ export const WebSocketContext = createContext<null | WebSocket>(null)
 export function WebSocketProvider({children} : {children : ReactNode}){
     const userIds = useRecoilValue(profilesAtom)
     const setProfiles = useSetRecoilState(profilesAtom)
-    const ws = new WebSocket("ws://localhost:4000")
+    const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL)
     ws.onmessage = (e)=>{
         
         const msg = JSON.parse(e.data) as Message

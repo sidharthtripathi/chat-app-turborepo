@@ -19,16 +19,17 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "schema" : "*",
     "@prisma/client": "^5.19.1",
     "@redis/search": "^1.2.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "redis": "^4.7.0",
-    "redisearch": "^1.0.3"
+    "redisearch": "^1.0.3",
+    "schema": "*"
   }
 }

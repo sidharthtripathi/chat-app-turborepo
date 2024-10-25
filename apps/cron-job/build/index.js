@@ -11,7 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const redis_1 = require("redis");
 const prisma_1 = require("./lib/prisma");
-const db = (0, redis_1.createClient)();
+const db = (0, redis_1.createClient)({
+    url: process.env.REDISDB_URL
+});
 function job() {
     return __awaiter(this, void 0, void 0, function* () {
         yield db.connect();

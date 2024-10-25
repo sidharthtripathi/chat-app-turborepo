@@ -7,11 +7,10 @@ import http from 'http'
 import { HTTPRequest,Socket } from './types/types'
 import {sentMessageSchema} from 'schema'
 import { Redis } from 'ioredis'
-
 dotenv.config()
-const pubClient = new Redis()
-const subClient = new Redis()
-const redisDB = new Redis()
+const pubClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
+const subClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
+const redisDB = new Redis(process.env.REDISDB_URL as string)
 const connectedSocket = new Map<string,Socket>()
 const server = http.createServer()
 
@@ -39,8 +38,6 @@ wss.on('connection',(socket:Socket,req:HTTPRequest)=>{
         // check the payload
         try {
             const msg = sentMessageSchema.parse(JSON.parse(e.data))
-            // send the msg
-            // check if reciever is online
             const payload = JSON.stringify({...msg,from:socket.userId})
             if(connectedSocket.has(msg.to)){
                 connectedSocket.get(msg.to)?.send(payload)
@@ -51,7 +48,6 @@ wss.on('connection',(socket:Socket,req:HTTPRequest)=>{
             }
             // save the msg to redis hash
             await redisDB.hset(`messages:${msg.id}`,{...msg,from:socket.userId})
-            console.log('saved to redis')
 
         } catch (error) {
             console.log(error)
@@ -68,8 +64,8 @@ async function main() {
         const msg = JSON.parse(message)
         connectedSocket.get(msg.to)?.send(message)
     })
-    server.listen(4000,()=>{
-        console.log("server: http://localhost:3000")
+    server.listen(process.env.PORT || 4000,()=>{
+        console.log("ws server is up")
     })
 }
 

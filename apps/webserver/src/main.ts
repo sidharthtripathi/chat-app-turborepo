@@ -9,10 +9,12 @@ import {SchemaFieldTypes} from 'redis'
 import {jwtPayloadSchema} from 'schema'
 import { redisDB } from './lib/redis'
 import { profileRouter } from './routes/profile'
+import dotenv from 'dotenv'
+dotenv.config()
 const server = express()
 // cors
 server.use(cors({
-    origin : "http://localhost:5173",
+    origin : process.env.FRONTEND_URL as string,
     methods : ["GET","POST"],
     credentials : true
 }))
@@ -69,7 +71,7 @@ async function main(){
         console.log(error)
         console.log("some error occured")
     }
-    server.listen(3000,()=>{
+    server.listen(process.env.PORT || 3000,()=>{
         console.log("webserver started...")
     })
 }
