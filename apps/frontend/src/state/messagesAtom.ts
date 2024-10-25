@@ -8,6 +8,8 @@ export type Message = {
 }
 export const messagesFamily = atomFamily({
     key : "messages",
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    default : (userId : string) : Message[]=>([])
+    default : (userId : string) : Message[]=>{
+        console.log(userId)
+        return []
+    }
 })
