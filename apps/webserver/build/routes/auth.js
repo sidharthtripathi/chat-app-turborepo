@@ -20,6 +20,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const schema_1 = require("schema");
 const prisma_1 = require("../lib/prisma");
 const library_1 = require("@prisma/client/runtime/library");
+const validToken_1 = require("../middlewares/validToken");
 const authRouter = express_1.default.Router();
 exports.authRouter = authRouter;
 authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -29,12 +30,16 @@ authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, functi
             where: { userId },
             select: { userId: true, password: true }
         });
-        if (!user)
+        if (!user) {
+            res.statusMessage = "TRY WITH DIFFERENT CREDENTIALS";
             return res.status(400).end();
-        if (user.password !== password)
+        }
+        if (!bcrypt_1.default.compareSync(password, user.password)) {
+            res.statusMessage = "TRY WITH DIFFERENT CREDENTIALS";
             return res.status(401).end();
+        }
         const accessToken = jsonwebtoken_1.default.sign({ userId }, process.env.JWT_SECRET);
-        return res.cookie("access-token", accessToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30, sameSite: 'none' }).json({ userId }).status(201);
+        return res.cookie("access-token", accessToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30, sameSite: 'none', secure: true }).json({ userId }).status(201);
     }
     catch (error) {
         console.log(error);
@@ -69,4 +74,7 @@ authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, funct
 authRouter.post('/logout', (req, res) => {
     res.clearCookie("access-token");
     return res.sendStatus(200);
+});
+authRouter.get('/valid-token', validToken_1.validToken, (req, res) => {
+    res.sendStatus(200);
 });

@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import { authRouter } from './routes/auth'
 import { chatRouter } from './routes/chat'
 import cookieParser from 'cookie-parser'
-import jwt from 'jsonwebtoken'
+import { validToken } from './middlewares/validToken'
 import {SchemaFieldTypes} from 'redis'
 import { redisDB } from './lib/redis'
 import { profileRouter } from './routes/profile'
@@ -25,16 +25,7 @@ server.use(bodyParser.json())
 
 server.use("/api",authRouter)
 
-server.use('/api',async(req,res,next)=>{
-    const accessToken = req.cookies["access-token"]
-    const payload = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
-    if(!accessToken || !payload){
-        res.statusMessage = 'INVALID ACCESS TOKEN'
-        return res.status(401).end()
-    }
-    res.locals = {userId : payload.userId}
-    next()
-},chatRouter)
+server.use('/api',validToken,chatRouter)
 
 server.use('/api',profileRouter)
 

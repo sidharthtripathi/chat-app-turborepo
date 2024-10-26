@@ -1,1 +1,1 @@
-{"root":["./src/main.ts","./src/lib/prisma.ts","./src/lib/redis.ts","./src/routes/auth.ts","./src/routes/chat.ts","./src/routes/profile.ts"],"version":"5.6.2"}
+{"root":["./src/main.ts","./src/lib/prisma.ts","./src/lib/redis.ts","./src/middlewares/validToken.ts","./src/routes/auth.ts","./src/routes/chat.ts","./src/routes/profile.ts"],"version":"5.6.2"}

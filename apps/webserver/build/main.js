@@ -18,7 +18,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const auth_1 = require("./routes/auth");
 const chat_1 = require("./routes/chat");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const validToken_1 = require("./middlewares/validToken");
 const redis_1 = require("redis");
 const redis_2 = require("./lib/redis");
 const profile_1 = require("./routes/profile");
@@ -35,16 +35,7 @@ server.use((0, cookie_parser_1.default)());
 server.use(body_parser_1.default.json());
 // routes
 server.use("/api", auth_1.authRouter);
-server.use('/api', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const accessToken = req.cookies["access-token"];
-    const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
-    if (!accessToken || !payload) {
-        res.statusMessage = 'INVALID ACCESS TOKEN';
-        return res.status(401).end();
-    }
-    res.locals = { userId: payload.userId };
-    next();
-}), chat_1.chatRouter);
+server.use('/api', validToken_1.validToken, chat_1.chatRouter);
 server.use('/api', profile_1.profileRouter);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {

@@ -16,6 +16,11 @@ export const sentMessageSchema = z.object({
 
 })
 
+export const createConversationSchema = z.object({
+    members : z.array(z.string()),
+    serverSecret : z.string()
+})
+
 export const conversationsSchema = z.array(z.object({
     id : z.string(),
     userId : z.string()

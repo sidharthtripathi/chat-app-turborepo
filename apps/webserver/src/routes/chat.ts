@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
-import {conversationSchema,conversationsSchema} from 'schema'
+import {conversationSchema,conversationsSchema, createConversationSchema} from 'schema'
 import {z} from 'zod'
 const chatRouter = Router()
 type Conversation = z.infer<typeof conversationSchema>
@@ -74,6 +74,34 @@ chatRouter.get('/chats/:conversationId',async(req,res)=>{
     })
     if(!conversation) return res.sendStatus(403)
     else return res.json(conversation)
+})
+
+chatRouter.post('/chat',async(req,res)=>{
+    // only to be made from the websocket server
+    try {
+        const {serverSecret,members} = createConversationSchema.parse(req.body)
+        if(serverSecret!==process.env.SERVER_SECRET) return res.status(401).end()
+        const conversation = await prisma.privateConversation.findFirst({
+            where : {
+                AND : [{members : {some : {userId : members.at(-1)}}},{members : {some : {userId : members.at(-2)}}}]
+            },
+            select : {id : true}
+        })
+        if(conversation) return res.json(conversation)
+        const newConversation =  await prisma.privateConversation.create({
+            data : {
+                members : {
+                    connect : [{userId : members.at(-1) },{userId : members.at(-2)}]
+                }
+            },
+            select : {
+                id : true
+            }
+        })
+        return res.json(newConversation)
+    } catch (error) {
+        return res.status(400).end()
+    }
 })
 
 

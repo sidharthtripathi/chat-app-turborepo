@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt'
 import { loginSignupSchema } from 'schema';
 import { prisma } from '../lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { validToken } from '../middlewares/validToken';
 const authRouter = express.Router()
 
 
@@ -15,10 +16,16 @@ authRouter.post('/login',async(req,res)=>{
             where : {userId},
             select:{userId:true,password:true}
         })
-        if(!user) return res.status(400).end();
-        if(user.password !== password) return res.status(401).end()
+        if(!user){
+            res.statusMessage = "TRY WITH DIFFERENT CREDENTIALS"
+            return res.status(400).end();
+        }
+        if(!bcrypt.compareSync(password,user.password)){
+            res.statusMessage = "TRY WITH DIFFERENT CREDENTIALS"
+            return res.status(401).end()
+        }
         const accessToken = jwt.sign({userId},process.env.JWT_SECRET as string)
-        return res.cookie("access-token",accessToken,{httpOnly:true,maxAge :1000*60*60*24*30,sameSite : 'none'}).json({userId}).status(201)
+        return res.cookie("access-token",accessToken,{httpOnly:true,maxAge :1000*60*60*24*30,sameSite : 'none',secure : true}).json({userId}).status(201)
     } catch (error) {
         console.log(error)
         if(error instanceof ZodError){
@@ -56,4 +63,8 @@ authRouter.post('/logout',(req,res)=>{
     return res.sendStatus(200)
 })
 
+
+authRouter.get('/valid-token',validToken,(req,res)=>{
+    res.sendStatus(200)
+})
 export {authRouter}
