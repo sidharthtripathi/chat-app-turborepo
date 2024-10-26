@@ -18,6 +18,7 @@ export default function ConversationList() {
           <Button variant="outline"
           onClick={async()=>{
             await server.post('/api/logout')
+            localStorage.clear()
             setProfile(null)
           }}
           >Logout</Button>
