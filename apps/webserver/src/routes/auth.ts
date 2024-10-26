@@ -21,7 +21,7 @@ authRouter.post('/login',async(req,res)=>{
         }
         const accessToken = jwt.sign({userId},process.env.JWT_SECRET as string)
 
-        return res.cookie("access-token",accessToken,{httpOnly:true,maxAge :1000*60*60*24*30}).json({userId}).status(201)
+        return res.cookie("access-token",accessToken,{httpOnly:true,maxAge :1000*60*60*24*30,sameSite : 'none'}).json({userId}).status(201)
     } catch (error) {
         if(error instanceof ZodError){
             res.statusMessage = "INVALID PAYLOAD"
