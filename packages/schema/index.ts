@@ -16,6 +16,11 @@ export const sentMessageSchema = z.object({
 
 })
 
+export const conversationsSchema = z.array(z.object({
+    id : z.string(),
+    userId : z.string()
+}))
+
 export const conversationSchema = z.object({
     id : z.string(),
     privateMessages : z.array(z.object({
