@@ -17,20 +17,34 @@ datasource db {
 model User{
   userId String @id
   password String
-  sentMessages Message[] @relation("senderUserId")
-  receivedMessages Message[] @relation("receiverUserId")
+  receivedMessages PrivateMessage[] @relation("msgSentTo")
+  sentMessages PrivateMessage[] @relation("msgSentFrom")
+  privateConversations PrivateConversation[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Message{
+model PrivateMessage{
   id String @id @default(uuid())
   content String
-  from User @relation("senderUserId",references: [userId],fields: [fromUserId])
-  fromUserId String 
-  to User @relation("receiverUserId",references: [userId],fields: [toUserId])
-  toUserId String
+  to String
+  toUser User @relation("msgSentTo",references: [userId],fields: [to])
+  from String
+  fromUser User @relation("msgSentFrom",references: [userId],fields: [from])
+
+  privateConversation PrivateConversation @relation(references: [id],fields: [privateConversationId])
+  privateConversationId String
   createdAt DateTime @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
+}
+
+model PrivateConversation{
+  id String @id @default(uuid())
+  members User[]
+  privateMessages PrivateMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+
 }
 

@@ -6,7 +6,6 @@ import { chatRouter } from './routes/chat'
 import cookieParser from 'cookie-parser'
 import jwt from 'jsonwebtoken'
 import {SchemaFieldTypes} from 'redis'
-import {jwtPayloadSchema} from 'schema'
 import { redisDB } from './lib/redis'
 import { profileRouter } from './routes/profile'
 import dotenv from 'dotenv'
@@ -15,9 +14,10 @@ const server = express()
 // cors
 server.use(cors({
     origin : process.env.FRONTEND_URL as string,
-    methods : ["GET","POST"],
+    methods : ["GET","POST","PUT","DELETE"],
     credentials : true
 }))
+
 server.use(cookieParser())
 server.use(bodyParser.json())
 
@@ -27,19 +27,16 @@ server.use("/api",authRouter)
 
 server.use('/api',async(req,res,next)=>{
     const accessToken = req.cookies["access-token"]
-    if(!accessToken) return res.json('INVALID TOKEN').status(401)
-    try {
-        const payload = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
-        const {userId} = jwtPayloadSchema.parse(payload)
-        res.locals = {userId}
-        next()
-    } catch (error) {
-        return res.json('INVALID TOKEN').status(401)
+    const payload = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
+    if(!accessToken || !payload){
+        res.statusMessage = 'INVALID ACCESS TOKEN'
+        return res.status(401).end()
     }
+    res.locals = {userId : payload.userId}
+    next()
 },chatRouter)
 
 server.use('/api',profileRouter)
-
 
 async function main(){
     // creating the index for messages hash
@@ -69,10 +66,10 @@ async function main(){
         
     } catch (error) {
         console.log(error)
-        console.log("some error occured")
     }
-    server.listen(process.env.PORT || 3000,()=>{
-        console.log("webserver started...")
+    const port = process.env.PORT || 3000
+    server.listen(port,()=>{
+        console.log(`webser started at port: ${port}`)
     })
 }
 

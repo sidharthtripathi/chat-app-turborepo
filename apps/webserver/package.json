@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build" : "npx prisma db push && npx tsc -b",
+    "start" : "node build/main.js"
   },
   "keywords": [],
   "author": "",

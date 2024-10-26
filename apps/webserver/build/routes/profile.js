@@ -18,9 +18,9 @@ const prisma_1 = require("../lib/prisma");
 exports.profileRouter = express_1.default.Router();
 exports.profileRouter.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { q } = req.query;
-    const query = q;
     if (!q)
         return res.json([]);
+    const query = q;
     const profiles = yield prisma_1.prisma.user.findMany({
         where: { userId: { contains: query } },
         select: { userId: true }

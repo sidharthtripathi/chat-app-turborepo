@@ -20,7 +20,6 @@ const chat_1 = require("./routes/chat");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const redis_1 = require("redis");
-const schema_1 = require("schema");
 const redis_2 = require("./lib/redis");
 const profile_1 = require("./routes/profile");
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -29,7 +28,7 @@ const server = (0, express_1.default)();
 // cors
 server.use((0, cors_1.default)({
     origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 server.use((0, cookie_parser_1.default)());
@@ -38,17 +37,13 @@ server.use(body_parser_1.default.json());
 server.use("/api", auth_1.authRouter);
 server.use('/api', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const accessToken = req.cookies["access-token"];
-    if (!accessToken)
-        return res.json('INVALID TOKEN').status(401);
-    try {
-        const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
-        const { userId } = schema_1.jwtPayloadSchema.parse(payload);
-        res.locals = { userId };
-        next();
+    const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
+    if (!accessToken || !payload) {
+        res.statusMessage = 'INVALID ACCESS TOKEN';
+        return res.status(401).end();
     }
-    catch (error) {
-        return res.json('INVALID TOKEN').status(401);
-    }
+    res.locals = { userId: payload.userId };
+    next();
 }), chat_1.chatRouter);
 server.use('/api', profile_1.profileRouter);
 function main() {
@@ -80,10 +75,10 @@ function main() {
         }
         catch (error) {
             console.log(error);
-            console.log("some error occured");
         }
-        server.listen(process.env.PORT || 3000, () => {
-            console.log("webserver started...");
+        const port = process.env.PORT || 3000;
+        server.listen(port, () => {
+            console.log(`webser started at port: ${port}`);
         });
     });
 }

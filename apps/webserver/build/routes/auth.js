@@ -29,20 +29,19 @@ authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, functi
             where: { userId },
             select: { userId: true, password: true }
         });
-        if (!user || !(user && bcrypt_1.default.compareSync(password, user.password))) {
-            res.statusMessage = "WRONG CREDENTIALS";
+        if (!user)
             return res.status(400).end();
-        }
+        if (user.password !== password)
+            return res.status(401).end();
         const accessToken = jsonwebtoken_1.default.sign({ userId }, process.env.JWT_SECRET);
-        return res.cookie("access-token", accessToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30 }).json({ userId }).status(201);
+        return res.cookie("access-token", accessToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30, sameSite: 'none' }).json({ userId }).status(201);
     }
     catch (error) {
-        if (error instanceof zod_1.ZodError) {
-            res.statusMessage = "INVALID PAYLOAD";
-            res.status(400).end();
-        }
         console.log(error);
-        res.status(500).end();
+        if (error instanceof zod_1.ZodError) {
+            return res.status(400).end();
+        }
+        return res.status(500).end();
     }
 }));
 authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,16 +50,17 @@ authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, funct
         yield prisma_1.prisma.user.create({
             data: { userId, password: bcrypt_1.default.hashSync(password, 10) }
         });
-        return res.status(201).json({ userId });
+        return res.status(201).end();
     }
     catch (error) {
+        console.log(error);
         if (error instanceof zod_1.ZodError) {
             res.statusMessage = "INVALID PAYLOAD";
-            res.status(400).end();
+            return res.status(400).end();
         }
         else if (error instanceof library_1.PrismaClientKnownRequestError) {
-            res.statusMessage = "USER ALREADY EXIST",
-                res.status(400).end();
+            res.statusMessage = "USER ALREADY EXIST";
+            return res.status(400).end();
         }
         else
             return res.status(500).end();
@@ -68,5 +68,5 @@ authRouter.post('/signup', (req, res) => __awaiter(void 0, void 0, void 0, funct
 }));
 authRouter.post('/logout', (req, res) => {
     res.clearCookie("access-token");
-    res.sendStatus(200);
+    return res.sendStatus(200);
 });
