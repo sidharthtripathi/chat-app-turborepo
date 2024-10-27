@@ -5,10 +5,9 @@ export const usersAtom = atom<string[]>({
     default : []
 })
 
-
-export const selectedUserAtom = atom<string | null>({
+export const selectedUserAtom = atom<string | undefined>({
     key : "selectedUser",
-    default : null
+    default: undefined
 })
 
 export const loggedInUserAtom = atom<string | null>({

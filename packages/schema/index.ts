@@ -19,12 +19,6 @@ export type RecievedClientMessage = {
     createdAt : Date
 }
 
-export type CreateConversation = {
-    sender : string,
-    receiver : string,
-    serverSecret : string
-}
-
 export type Conversation = {
     id : string,
     privateMessages : {
@@ -34,4 +28,4 @@ export type Conversation = {
         createdAt : Date,
         id : string
     }[]
-} | null
+}
