@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
-import {conversationSchema,conversationsSchema, createConversationSchema} from 'schema'
-import {z} from 'zod'
+import {Conversation, CreateConversation} from 'schema'
 const chatRouter = Router()
-type Conversation = z.infer<typeof conversationSchema>
-type Conversations = z.infer<typeof conversationsSchema>
 chatRouter.get('/chats',async(req,res)=>{
     const convos = await prisma.privateConversation.findMany({
         where : {
@@ -15,18 +12,18 @@ chatRouter.get('/chats',async(req,res)=>{
             }
         },
         select : {
-            id : true,
             members : {
                 where : {
                     userId : {
                         not : res.locals.userId
                     }
                 },
+                take : 1,
                 select : {userId:true}
             }
         }
     })
-    const result : Conversations = convos.map(convo=>({id : convo.id,userId : convo.members[convo.members.length-1].userId}))
+    const result  = convos.map(convo=>(convo.members[convo.members.length-1].userId))
     return res.json(result)
 })
 
@@ -34,9 +31,7 @@ chatRouter.get('/chats/:conversationId',async(req,res)=>{
     const time = req.query.time as string
     const isTimeValid = !isNaN((new Date(time)).getTime())
     const conversationId = req.params.conversationId;
-    if(!isTimeValid) return res.json({conversationId,privateMessages : []})
     // use new Date().toISOString() to get string from time
-
 
     // getting chats from Redis
 
@@ -55,7 +50,7 @@ chatRouter.get('/chats/:conversationId',async(req,res)=>{
             privateMessages : {
                 where : {
                     createdAt : {
-                        lt : new Date(time)
+                        lt : isTimeValid ? new Date(time) : new Date()
                     }
                 },
                 orderBy : {
@@ -79,26 +74,26 @@ chatRouter.get('/chats/:conversationId',async(req,res)=>{
 chatRouter.post('/chat',async(req,res)=>{
     // only to be made from the websocket server
     try {
-        const {serverSecret,members} = createConversationSchema.parse(req.body)
+        const {serverSecret,sender,receiver} = req.body as CreateConversation
         if(serverSecret!==process.env.SERVER_SECRET) return res.status(401).end()
         const conversation = await prisma.privateConversation.findFirst({
             where : {
-                AND : [{members : {some : {userId : members.at(-1)}}},{members : {some : {userId : members.at(-2)}}}]
+                AND : [{members : {some : {userId : sender}}},{members : {some : {userId : receiver}}}]
             },
             select : {id : true}
         })
-        if(conversation) return res.json(conversation)
+        if(conversation) return res.json({id : conversation.id,userId : receiver })
         const newConversation =  await prisma.privateConversation.create({
             data : {
                 members : {
-                    connect : [{userId : members.at(-1) },{userId : members.at(-2)}]
+                    connect : [{userId : sender},{userId : receiver}]
                 }
             },
             select : {
                 id : true
             }
         })
-        return res.json(newConversation)
+        return res.json({id : newConversation.id,userId : receiver})
     } catch (error) {
         return res.status(400).end()
     }

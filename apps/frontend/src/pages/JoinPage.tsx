@@ -16,12 +16,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { server } from "@/lib/axios";
 import { AxiosError } from "axios";
+import { useSetRecoilState } from "recoil";
+import { loggedInUserAtom } from "@/state/profileAtom";
 const loginSignupSchema = z.object({
   userId: z.string().min(1),
   password: z.string().min(8),
 });
 type LoginSignupType = z.infer<typeof loginSignupSchema>;
 export function Join() {
+  const setLoggedInUser = useSetRecoilState(loggedInUserAtom)
   const [isLogin, setIsLogin] = useState(true);
   const {
     register,
@@ -34,7 +37,8 @@ export function Join() {
     if(isLogin){
       try {
         await server.post('/api/login',{userId,password})
-        console.log("logging in")
+        setLoggedInUser(userId)
+        
       } catch (error) {
         if(error instanceof AxiosError)
         console.log(error.response?.statusText)
@@ -43,6 +47,7 @@ export function Join() {
     else{
       try {
         await server.post('/api/signup',{userId,password})
+        setIsLogin(false)
         console.log("Created")
       } catch (error) {
         if(error instanceof AxiosError)

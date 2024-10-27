@@ -1,18 +1,17 @@
 import { atom } from "recoil";
 
-export const profileAtom = atom<null | string>({
-    key : "profile",
-    default : localStorage.getItem("userId")
-})
-
-
-export const profilesAtom = atom<string[]>({
-    key : "profilesArray",
+export const usersAtom = atom<string[]>({
+    key : "conversationsAtom",
     default : []
 })
 
 
-export const selectedProfileAtom = atom<undefined | string>({
-    key : "selectedUserId",
-    default : undefined
+export const selectedUserAtom = atom<string | null>({
+    key : "selectedUser",
+    default : null
+})
+
+export const loggedInUserAtom = atom<string | null>({
+    key :"loggedInUser",
+    default : null
 })

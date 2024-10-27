@@ -1,8 +1,8 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { selectedProfileAtom } from "@/state/profileAtom"
+import { selectedUserAtom } from "@/state/profileAtom"
 import { useSetRecoilState } from "recoil"
 export function ChatItem({userId} : {userId : string }){
-  const setSelectedUser = useSetRecoilState(selectedProfileAtom)
+  const setSelectedUser = useSetRecoilState(selectedUserAtom)
     return (
         <div onClick={()=>{
           setSelectedUser(userId)

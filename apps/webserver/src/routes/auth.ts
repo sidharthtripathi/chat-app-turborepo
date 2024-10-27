@@ -65,6 +65,6 @@ authRouter.post('/logout',(req,res)=>{
 
 
 authRouter.get('/valid-token',validToken,(req,res)=>{
-    res.sendStatus(200)
+    res.json({userId : res.locals.userId})
 })
 export {authRouter}

@@ -31,11 +31,11 @@
     "recoil": "^0.7.7",
     "recoil-nexus": "^0.5.1",
     "reconnecting-websocket": "^4.4.0",
+    "schema": "*",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^10.0.0",
-    "zod": "^3.23.8",
-    "schema": "*"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

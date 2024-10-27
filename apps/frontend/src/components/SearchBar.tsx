@@ -2,12 +2,12 @@ import { server } from "@/lib/axios"
 import { Input } from "./ui/input"
 import { useRef, useState } from "react"
 import { useSetRecoilState } from "recoil"
-import { selectedProfileAtom } from "@/state/profileAtom"
+import { selectedUserAtom } from "@/state/profileAtom"
 
 export function SearchBar(){
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [users,setUsers] = useState<{userId : string}[]>([])
-    const setSelectedProfile = useSetRecoilState(selectedProfileAtom)
+    const setSelectedUser = useSetRecoilState(selectedUserAtom)
     return (
         <div>
              <Input ref={inputRef} type="search" placeholder="Search chats..." className="w-full"
@@ -25,7 +25,7 @@ export function SearchBar(){
                     <div
                     className="hover:cursor-pointer p-2 bg-secondary rounded-md"
                     onClick={()=>{
-                       setSelectedProfile(user.userId)
+                       setSelectedUser(user.userId)
                     }} 
                     key={user.userId}>{user.userId}</div>))
                 }

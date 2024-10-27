@@ -76,5 +76,5 @@ authRouter.post('/logout', (req, res) => {
     return res.sendStatus(200);
 });
 authRouter.get('/valid-token', validToken_1.validToken, (req, res) => {
-    res.sendStatus(200);
+    res.json({ userId: res.locals.userId });
 });

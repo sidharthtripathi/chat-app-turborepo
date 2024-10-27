@@ -4,7 +4,7 @@ export type Message = {
     content : string,
     from : string, 
     to : string,
-    createdAt : number;
+    createdAt : Date;
 }
 export const messagesFamily = atomFamily({
     key : "messages",
