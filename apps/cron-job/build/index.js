@@ -18,17 +18,62 @@ function job() {
     return __awaiter(this, void 0, void 0, function* () {
         yield db.connect();
         const res = yield db.ft.search("idx:messages", `@createdAt : [0 ${Date.now()}]`);
-        const msgs = [];
-        const msgIds = [];
         if (res.total > 0) {
+            const msgs = res.documents;
+            for (let i = 0; i < msgs.length; i++) {
+                const msg = { id: msgs[i].id, content: msgs[i].value.content, from: msgs[i].value.from, to: msgs[i].value.to, createdAt: msgs[i].value.createdAt };
+                // check if such conversation exists or not 
+                const convo = yield prisma_1.prisma.privateConversation.findFirst({
+                    where: {
+                        AND: [
+                            {
+                                members: {
+                                    some: {
+                                        userId: msg.from
+                                    }
+                                }
+                            },
+                            {
+                                members: {
+                                    some: {
+                                        userId: msg.to
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    select: { id: true }
+                });
+                let convoId;
+                if (!convo) {
+                    const convo = yield prisma_1.prisma.privateConversation.create({
+                        data: {
+                            members: {
+                                connect: [{ userId: msg.from }, { userId: msg.to }]
+                            }
+                        },
+                        select: { id: true }
+                    });
+                    convoId = convo.id;
+                }
+                else {
+                    convoId = convo.id;
+                }
+                // now create the msg for this conversation
+                yield prisma_1.prisma.privateMessage.create({
+                    data: {
+                        privateConversationId: convoId,
+                        content: msg.content,
+                        to: msg.to,
+                        from: msg.from,
+                        createdAt: new Date(msg.createdAt)
+                    }
+                });
+            }
             res.documents.forEach((doc) => {
-                msgs.push({ id: doc.value.id, content: doc.value.content, createdAt: new Date(parseInt(doc.value.createdAt)), fromUserId: doc.value.from, toUserId: doc.value.to });
-                msgIds.push(doc.id);
+                // msgs.push({id : doc.id,content: doc.value.content,createdAt: new Date(parseInt(doc.value.createdAt)), fromUserId : doc.value.from,toUserId : doc.value.to})
             });
-            yield prisma_1.prisma.message.createMany({
-                data: msgs
-            });
-            yield db.del(msgIds);
+            // await db.del(msgIds)
         }
         yield db.disconnect();
     });

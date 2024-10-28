@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch & node --watch build"
+    "start" : "node build"
   },
   "devDependencies": {
     "@types/cookie": "^0.6.0",

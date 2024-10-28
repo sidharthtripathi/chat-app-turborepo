@@ -1,7 +1,6 @@
 import cookie from 'cookie'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import {jwtPayloadSchema} from 'schema'
 import { WebSocketServer } from 'ws'
 import http from 'http'
 import { HTTPRequest,Socket } from './types/types'
@@ -19,7 +18,7 @@ server.on('upgrade',(req:HTTPRequest,socket,head)=>{
     const cookies = cookie.parse(req.headers.cookie)
     const accesstoken = cookies["access-token"]
     try {
-        const {userId} = jwtPayloadSchema.parse(jwt.verify(accesstoken,process.env.JWT_SECRET as string))
+        const {userId} = jwt.verify(accesstoken,process.env.JWT_SECRET as string) as {userId : string}
         req.userId = userId
     } catch (error) {
         socket.end()
@@ -48,6 +47,8 @@ wss.on('connection',(socket:Socket,req:HTTPRequest)=>{
             }
             // save the msg to redis hash
             await redisDB.hset(`messages:${msg.id}`,{...msg,from:socket.userId})
+            await redisDB.sadd(`users:${msg.to}`,[socket.userId])
+            await redisDB.sadd(`users:${socket.userId}`,[msg.to])
 
         } catch (error) {
             console.log(error)

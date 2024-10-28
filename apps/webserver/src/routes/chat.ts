@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
 import { Conversation } from "schema";
+import { redisDB } from "../lib/redis";
 const chatRouter = Router();
 chatRouter.get("/chats", async (req, res) => {
   const convos = await prisma.privateConversation.findMany({
@@ -23,10 +24,12 @@ chatRouter.get("/chats", async (req, res) => {
       },
     },
   });
+  const redisResult = await redisDB.sMembers(`users:${res.locals.userId}`)
   const result = convos.map(
     (convo) => convo.members[convo.members.length - 1].userId
   );
-  return res.json(result);
+
+  return res.json([...new Set(redisResult.concat(result))]);
 });
 
 chatRouter.get("/chats/:userId", async (req, res) => {

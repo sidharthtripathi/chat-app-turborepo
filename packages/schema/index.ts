@@ -9,7 +9,7 @@ export const sentMessageSchema = z.object({
     id : z.string(),
     to : z.string(),
     content : z.string(),
-    createdAt : z.date()
+    createdAt : z.number()
 })
 
 export type RecievedClientMessage = {

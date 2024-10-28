@@ -15,10 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cookie_1 = __importDefault(require("cookie"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const schema_1 = require("schema");
 const ws_1 = require("ws");
 const http_1 = __importDefault(require("http"));
-const schema_2 = require("schema");
+const schema_1 = require("schema");
 const ioredis_1 = require("ioredis");
 dotenv_1.default.config();
 const pubClient = new ioredis_1.Redis(process.env.REDIS_PUBSUB_URL);
@@ -32,7 +31,7 @@ server.on('upgrade', (req, socket, head) => {
     const cookies = cookie_1.default.parse(req.headers.cookie);
     const accesstoken = cookies["access-token"];
     try {
-        const { userId } = schema_1.jwtPayloadSchema.parse(jsonwebtoken_1.default.verify(accesstoken, process.env.JWT_SECRET));
+        const { userId } = jsonwebtoken_1.default.verify(accesstoken, process.env.JWT_SECRET);
         req.userId = userId;
     }
     catch (error) {
@@ -51,7 +50,7 @@ wss.on('connection', (socket, req) => {
         var _a;
         // check the payload
         try {
-            const msg = schema_2.sentMessageSchema.parse(JSON.parse(e.data));
+            const msg = schema_1.sentMessageSchema.parse(JSON.parse(e.data));
             const payload = JSON.stringify(Object.assign(Object.assign({}, msg), { from: socket.userId }));
             if (connectedSocket.has(msg.to)) {
                 (_a = connectedSocket.get(msg.to)) === null || _a === void 0 ? void 0 : _a.send(payload);
@@ -62,7 +61,8 @@ wss.on('connection', (socket, req) => {
             }
             // save the msg to redis hash
             yield redisDB.hset(`messages:${msg.id}`, Object.assign(Object.assign({}, msg), { from: socket.userId }));
-            console.log('saved to redis');
+            yield redisDB.sadd(`users:${msg.to}`, [socket.userId]);
+            yield redisDB.sadd(`users:${socket.userId}`, [msg.to]);
         }
         catch (error) {
             console.log(error);

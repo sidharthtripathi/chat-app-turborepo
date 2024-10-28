@@ -51,9 +51,9 @@ export function Chats({ userId }: { userId: string }) {
       id: uuid(),
       content: data.message,
       to: userId,
-      createdAt: new Date(),
+      createdAt: Date.now()
     };
-    setMessages((p) => [...p, { ...payload, from: userId }]);
+    setMessages((p) => [...p, { ...payload,createdAt : new Date(payload.createdAt), from: userId }]);
     const userExists = users.includes(payload.to);
     if (!userExists) setUsers((p) => [...p, payload.to]);
     socket.send(JSON.stringify(payload));
