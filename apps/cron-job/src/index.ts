@@ -5,7 +5,7 @@ const db = createClient({
 })
 type RedisMsg = {
     id : string,
-    createdAt : number,
+    createdAt : string,
     content : string,
     from : string,
     to : string
@@ -15,8 +15,10 @@ async function job(){
     const res = await db.ft.search("idx:messages",`@createdAt : [0 ${Date.now()}]`)
     if(res.total > 0){
         const msgs = res.documents
+        const msgIds : string[] = []
         for(let i = 0 ; i < msgs.length ; i++){
-            const msg : RedisMsg = {id:msgs[i].id,content:msgs[i].value.content as string,from:msgs[i].value.from as string,to:msgs[i].value.to as string,createdAt : msgs[i].value.createdAt as number}
+            msgIds.push(msgs[i].id)
+            const msg : RedisMsg = {id:msgs[i].id,content:msgs[i].value.content as string,from:msgs[i].value.from as string,to:msgs[i].value.to as string,createdAt : msgs[i].value.createdAt as string}
             // check if such conversation exists or not 
             const convo = await prisma.privateConversation.findFirst({
                 where : {
@@ -62,20 +64,17 @@ async function job(){
                     content : msg.content,
                     to : msg.to,
                     from : msg.from,
-                    createdAt : new Date(msg.createdAt)
+                    createdAt : new Date(parseInt(msg.createdAt))
                 }
             })
 
 
         }
-        res.documents.forEach((doc : any)=>{
-            // msgs.push({id : doc.id,content: doc.value.content,createdAt: new Date(parseInt(doc.value.createdAt)), fromUserId : doc.value.from,toUserId : doc.value.to})
-        })
-
-        // await db.del(msgIds)
+        await db.del(msgIds)
     }
     await db.disconnect()
 
 }
 
-setInterval(job,600000)
+setInterval(job,1000*5)
+// 600000

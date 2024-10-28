@@ -20,12 +20,9 @@ export type RecievedClientMessage = {
 }
 
 export type Conversation = {
-    id : string,
-    privateMessages : {
         content : string,
         to : string,
         from : string,
         createdAt : Date,
         id : string
-    }[]
-}
+}[]

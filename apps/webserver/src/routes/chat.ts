@@ -38,10 +38,18 @@ chatRouter.get("/chats/:userId", async (req, res) => {
   const userId = req.params.userId;
   // use new Date().toISOString() to get string from time
 
-  // getting chats from Redis
-
+  const currentTime = Date.now()
+  // getting chats from Redis 
+  const redisChats = await redisDB.ft.search("idx:messages",`((@from:${res.locals.userId} @to:${userId}) | (@from:${userId} @to:${res.locals.userId})) @createdAt:[-inf ${isTimeValid ? new Date(time).getTime() : currentTime}]`,{LIMIT : {from : 0,size : 10000},SORTBY : {BY  : "createdAt",DIRECTION :"ASC"}})
+  const rChats : {content : string,id:string,from:string,to:string, createdAt : Date}[] = []
+  if(redisChats.total > 0){
+    redisChats.documents.forEach(({id,value})=>{
+      const msg = {id,content : value.content as string,from:value.from as string,to:value.to as string,createdAt : new Date(parseInt(value.createdAt as string))}
+      rChats.push(msg)
+    })
+  }
   // getting chats from DB
-  const conversation : Conversation | null = await prisma.privateConversation.findFirst(
+  const conversation = await prisma.privateConversation.findFirst(
     {
       where: {
         AND: [
@@ -62,11 +70,10 @@ chatRouter.get("/chats/:userId", async (req, res) => {
         ],
       },
       select: {
-        id: true,
         privateMessages: {
           where: {
             createdAt: {
-              lt: isTimeValid ? new Date(time) : new Date(),
+              lt: isTimeValid ? new Date(time) : new Date(currentTime),
             },
           },
           orderBy: {
@@ -83,8 +90,11 @@ chatRouter.get("/chats/:userId", async (req, res) => {
       },
     }
   );
-  if (!conversation) return res.sendStatus(403);
-  else return res.json(conversation);
+  if (!conversation) return res.json(rChats);
+  else{ 
+    conversation.privateMessages.concat(rChats)
+    return res.json(conversation.privateMessages);
+  }
 });
 
 // chatRouter.post('/chat',async(req,res)=>{

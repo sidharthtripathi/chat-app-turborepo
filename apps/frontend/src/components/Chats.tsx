@@ -21,8 +21,8 @@ export function Chats({ userId }: { userId: string }) {
     queryKey: ["chats", userId],
     queryFn: async () => {
       try {
-        const { data } = await server.get<Conversation>(`/chats/${userId}`);
-        const msgs: Message[] = data.privateMessages.map((msg) => ({
+        const { data } = await server.get<Conversation>(`/api/chats/${userId}`);
+        const msgs: Message[] = data.map((msg) => ({
           content: msg.content,
           createdAt: msg.createdAt,
           from: msg.from,
@@ -34,6 +34,8 @@ export function Chats({ userId }: { userId: string }) {
         console.log(error);
       }
     },
+    refetchOnMount : false,
+    refetchOnWindowFocus : false
   });
 
   const setSelectedUser = useSetRecoilState(selectedUserAtom);

@@ -20,7 +20,9 @@ function job() {
         const res = yield db.ft.search("idx:messages", `@createdAt : [0 ${Date.now()}]`);
         if (res.total > 0) {
             const msgs = res.documents;
+            const msgIds = [];
             for (let i = 0; i < msgs.length; i++) {
+                msgIds.push(msgs[i].id);
                 const msg = { id: msgs[i].id, content: msgs[i].value.content, from: msgs[i].value.from, to: msgs[i].value.to, createdAt: msgs[i].value.createdAt };
                 // check if such conversation exists or not 
                 const convo = yield prisma_1.prisma.privateConversation.findFirst({
@@ -66,16 +68,14 @@ function job() {
                         content: msg.content,
                         to: msg.to,
                         from: msg.from,
-                        createdAt: new Date(msg.createdAt)
+                        createdAt: new Date(parseInt(msg.createdAt))
                     }
                 });
             }
-            res.documents.forEach((doc) => {
-                // msgs.push({id : doc.id,content: doc.value.content,createdAt: new Date(parseInt(doc.value.createdAt)), fromUserId : doc.value.from,toUserId : doc.value.to})
-            });
-            // await db.del(msgIds)
+            yield db.del(msgIds);
         }
         yield db.disconnect();
     });
 }
-setInterval(job, 600000);
+setInterval(job, 1000 * 5);
+// 600000
