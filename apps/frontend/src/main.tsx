@@ -17,5 +17,4 @@ createRoot(document.getElementById("root")!).render(
       </ThemeProvider>
     </RecoilRoot>
   </QueryClientProvider>
-  // <App2/>
 );

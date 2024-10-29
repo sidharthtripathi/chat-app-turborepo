@@ -1,2 +1,3 @@
 import { createContext } from "react";
-export const WebSocketContext = createContext<WebSocket | null>(null)
+import ReconnectingWebSocket from "reconnecting-websocket";
+export const WebSocketContext = createContext<ReconnectingWebSocket | null>(null)
