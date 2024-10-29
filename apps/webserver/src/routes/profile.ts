@@ -1,6 +1,5 @@
 import express from 'express'
 import { prisma } from '../lib/prisma';
-import {z} from 'zod'
 export const profileRouter = express.Router()
 profileRouter.get('/users',async(req,res)=>{
     const {q} = req.query;

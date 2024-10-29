@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
-import { Conversation } from "schema";
 import { redisDB } from "../lib/redis";
 const chatRouter = Router();
 chatRouter.get("/chats", async (req, res) => {
@@ -97,32 +96,5 @@ chatRouter.get("/chats/:userId", async (req, res) => {
   }
 });
 
-// chatRouter.post('/chat',async(req,res)=>{
-//     // only to be made from the websocket server
-//     try {
-//         const {serverSecret,sender,receiver} = req.body as CreateConversation
-//         if(serverSecret!==process.env.SERVER_SECRET) return res.status(401).end()
-//         const conversation = await prisma.privateConversation.findFirst({
-//             where : {
-//                 AND : [{members : {some : {userId : sender}}},{members : {some : {userId : receiver}}}]
-//             },
-//             select : {id : true}
-//         })
-//         if(conversation) return res.json({id : conversation.id,userId : receiver })
-//         const newConversation =  await prisma.privateConversation.create({
-//             data : {
-//                 members : {
-//                     connect : [{userId : sender},{userId : receiver}]
-//                 }
-//             },
-//             select : {
-//                 id : true
-//             }
-//         })
-//         return res.json({id : newConversation.id,userId : receiver})
-//     } catch (error) {
-//         return res.status(400).end()
-//     }
-// })
 
 export { chatRouter };
