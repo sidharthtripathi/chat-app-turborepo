@@ -48,7 +48,6 @@ export function Chats({ userId }: { userId: string }) {
     reset,
   } = useForm<{ message: string }>();
   function onSubmit(data: { message: string }) {
-    console.log(data);
     const payload: SentMessage = {
       id: uuid(),
       content: data.message,

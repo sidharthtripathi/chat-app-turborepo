@@ -65,8 +65,9 @@ async function main() {
         const msg = JSON.parse(message)
         connectedSocket.get(msg.to)?.send(message)
     })
-    server.listen(process.env.PORT || 4000,()=>{
-        console.log("ws server is up")
+    const port = process.env.PORT || 4000;
+    server.listen(port,()=>{
+        console.log(`ws server started at: ${port}`)
     })
 }
 

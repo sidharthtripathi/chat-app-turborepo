@@ -13,7 +13,6 @@ export default function ConversationList() {
   const { isLoading } = useQuery(
     ["chats"],
     async () => {
-      console.log("fetching chats");
       const { data } = await server.get<string[]>("/api/chats");
       setUsers(data);
       return data;

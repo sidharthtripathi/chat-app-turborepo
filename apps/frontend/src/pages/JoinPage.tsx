@@ -18,12 +18,14 @@ import { server } from "@/lib/axios";
 import { AxiosError } from "axios";
 import { useSetRecoilState } from "recoil";
 import { loggedInUserAtom } from "@/state/profileAtom";
+import { useToast } from "@/hooks/use-toast";
 const loginSignupSchema = z.object({
   userId: z.string().min(1),
   password: z.string().min(8),
 });
 type LoginSignupType = z.infer<typeof loginSignupSchema>;
 export function Join() {
+  const {toast} = useToast()
   const setLoggedInUser = useSetRecoilState(loggedInUserAtom)
   const [isLogin, setIsLogin] = useState(true);
   const {
@@ -48,7 +50,7 @@ export function Join() {
       try {
         await server.post('/api/signup',{userId,password})
         setIsLogin(false)
-        console.log("Created")
+        toast({title : "ACCOUNT CREATED"})
       } catch (error) {
         if(error instanceof AxiosError)
           console.log(error.message)
