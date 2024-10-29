@@ -27,7 +27,7 @@ dotenv_1.default.config();
 const server = (0, express_1.default)();
 // cors
 server.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_URL_DEV],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));

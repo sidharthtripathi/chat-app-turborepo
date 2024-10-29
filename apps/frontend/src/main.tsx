@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -9,15 +8,14 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import RecoilNexus from "recoil-nexus";
 const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <RecoilRoot>
-          <RecoilNexus />
-          <Toaster />
-          <App />
-        </RecoilRoot>
-      </QueryClientProvider>
-    </ThemeProvider>
-  </StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <RecoilRoot>
+      <RecoilNexus /> 
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <Toaster />
+        <App />
+      </ThemeProvider>
+    </RecoilRoot>
+  </QueryClientProvider>
+  // <App2/>
 );

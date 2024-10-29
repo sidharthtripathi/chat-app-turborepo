@@ -16,7 +16,6 @@ const db = (0, redis_1.createClient)({
 });
 function job() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield db.connect();
         const res = yield db.ft.search("idx:messages", `@createdAt : [0 ${Date.now()}]`);
         if (res.total > 0) {
             const msgs = res.documents;
@@ -74,8 +73,12 @@ function job() {
             }
             yield db.del(msgIds);
         }
-        yield db.disconnect();
     });
 }
-setInterval(job, 1000 * 5);
-// 600000
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield db.connect();
+        setInterval(job, 600000);
+    });
+}
+main();
