@@ -42,10 +42,10 @@ chatRouter.get("/chats/:userId", async (req, res) => {
   const redisChats = await redisDB.ft.search("idx:messages",`((@from:${res.locals.userId} @to:${userId}) | (@from:${userId} @to:${res.locals.userId})) @createdAt:[-inf ${isTimeValid ? new Date(time).getTime() : currentTime}]`,{LIMIT : {from : 0,size : 10000},SORTBY : {BY  : "createdAt",DIRECTION :"ASC"}})
   const rChats : {content : string,id:string,from:string,to:string, createdAt : Date}[] = []
   if(redisChats.total > 0){
-    redisChats.documents.forEach(({id,value})=>{
-      const msg = {id,content : value.content as string,from:value.from as string,to:value.to as string,createdAt : new Date(parseInt(value.createdAt as string))}
+    for(let i = 0 ; i<redisChats.documents.length ; i++){
+      const msg = {id:redisChats.documents[i].id,content : redisChats.documents[i].value.content as string,from:redisChats.documents[i].value.from as string,to:redisChats.documents[i].value.to as string,createdAt : new Date(parseInt(redisChats.documents[i].value.createdAt as string))}
       rChats.push(msg)
-    })
+    }
   }
   // getting chats from DB
   const conversation = await prisma.privateConversation.findFirst(
