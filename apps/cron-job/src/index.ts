@@ -10,8 +10,8 @@ type RedisMsg = {
     from : string,
     to : string
 }
+
 async function job(){
-    await db.connect();
     const res = await db.ft.search("idx:messages",`@createdAt : [0 ${Date.now()}]`)
     if(res.total > 0){
         const msgs = res.documents
@@ -72,9 +72,12 @@ async function job(){
         }
         await db.del(msgIds)
     }
-    await db.disconnect()
 
 }
 
-setInterval(job,1000*5)
-// 600000
+async function main() {
+    await db.connect()
+    setInterval(job,600000)
+}
+
+main()
