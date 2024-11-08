@@ -1,6 +1,9 @@
 {
+  "name": "websocket",
+  "version": "1.0.0",
   "scripts": {
-    "build": "tsc",
+    "dev" : "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "build": "npx tsc -b",
     "start" : "node build"
   },
   "devDependencies": {
