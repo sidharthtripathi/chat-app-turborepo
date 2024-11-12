@@ -27,11 +27,15 @@ authRouter.post("/login", async (req, res) => {
     const refreshToken = jwt.sign({ userId }, process.env.JWT_SECRET!,{expiresIn : "30d"});
     res.cookie("access-token", accessToken, {
       httpOnly: true,
+      sameSite : "none",
+      secure : true,
       maxAge: 900000,
     });
     res
       .cookie("refresh-token", refreshToken, {
         httpOnly: true,
+        sameSite : "none",
+        secure : true,
         path: "/api/access-token",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
@@ -89,7 +93,7 @@ authRouter.get("/access-token", async (req, res) => {
       expiresIn: "15m",
     });
     return res
-      .cookie("access-token", accessToken, { httpOnly: true, maxAge: 900000 })
+      .cookie("access-token", accessToken, { httpOnly: true, maxAge: 900000,sameSite : "none",secure : true })
       .end();
   } catch (error) {
     res.status(401)
