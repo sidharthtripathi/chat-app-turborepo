@@ -14,11 +14,10 @@ const connectedSocket = new Map<string,Socket>()
 const server = http.createServer()
 
 server.on('upgrade',(req:HTTPRequest,socket,head)=>{
-    if(!(req.headers.cookie)) return socket.end()
-    const cookies = cookie.parse(req.headers.cookie)
-    const accesstoken = cookies["access-token"]
+    const accessToken = req.headers['sec-websocket-protocol']
+    if(!accessToken) return socket.end()
     try {
-        const {userId} = jwt.verify(accesstoken,process.env.JWT_SECRET as string) as {userId : string}
+        const {userId} = jwt.verify(accessToken,process.env.JWT_SECRET!) as {userId : string}
         req.userId = userId
     } catch (error) {
         socket.end()

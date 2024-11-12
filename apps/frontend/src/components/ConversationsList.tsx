@@ -30,7 +30,7 @@ export default function ConversationList() {
           <p className="text-sm text-muted-foreground">
             Hello
             <span className="text-primary underline text-bold text-lg">
-              {userLoggedIn}
+              {userLoggedIn?.userId}
             </span>
           </p>
           <Button variant="outline">Logout</Button>

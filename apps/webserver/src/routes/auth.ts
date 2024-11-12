@@ -39,7 +39,7 @@ authRouter.post("/login", async (req, res) => {
         path: "/api/access-token",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
-      .json({ userId })
+      .json({ userId,token : accessToken })
       .status(201);
   } catch (error) {
     console.log(error);
@@ -75,7 +75,7 @@ authRouter.post("/logout", (req, res) => {
 });
 
 authRouter.get("/valid-token", validToken, (req, res) => {
-  res.json({ userId: res.locals.userId });
+  res.json({ userId: res.locals.userId,token : res.locals.token});
 });
 
 

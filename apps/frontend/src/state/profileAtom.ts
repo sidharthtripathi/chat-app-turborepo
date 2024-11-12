@@ -10,7 +10,7 @@ export const selectedUserAtom = atom<string | undefined>({
     default: undefined
 })
 
-export const loggedInUserAtom = atom<string | null>({
+export const loggedInUserAtom = atom<{userId : string,token : string} | undefined>({
     key :"loggedInUser",
-    default : null
+    default : undefined
 })

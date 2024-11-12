@@ -8,7 +8,7 @@ export async function validToken(req:Request,res : Response,next : NextFunction)
     }
     try {
         const payload = jwt.verify(accessToken,process.env.JWT_SECRET!) as jwt.JwtPayload
-        res.locals = {userId : payload.userId}
+        res.locals = {userId : payload.userId,token : accessToken}
         next()
     } catch (error) {
         res.statusMessage = 'INVALID ACCESS TOKEN'

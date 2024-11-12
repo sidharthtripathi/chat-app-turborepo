@@ -38,9 +38,8 @@ export function Join() {
   async function onSubmit({userId,password}: LoginSignupType) {
     if(isLogin){
       try {
-        await server.post('/api/login',{userId,password})
-        setLoggedInUser(userId)
-        
+        const {data} = await server.post('/api/login',{userId,password})
+        setLoggedInUser({userId,token : data.token })
       } catch (error) {
         if(error instanceof AxiosError)
         console.log(error.response?.statusText)

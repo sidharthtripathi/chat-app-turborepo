@@ -3,20 +3,19 @@ import ChatAppPage from "./pages/ChatAppPage";
 import { useQuery } from "react-query";
 import { server } from "./lib/axios";
 import { WebsocketWrapper } from "./components/WebsocketWrapper";
-import { useRecoilState } from "recoil";
+import {  useRecoilState } from "recoil";
 import { loggedInUserAtom } from "./state/profileAtom";
 
 export default function App() {
-  const [loggedInUser, setLoggedInUser] = useRecoilState(loggedInUserAtom);
+  const [loggedInUser,setLoggedInUser] = useRecoilState(loggedInUserAtom);
   const { isLoading } = useQuery({
     queryKey: ["valid-token"],
     queryFn: async () => {
       try {
-        const { data } = await server.get<{ userId: string }>(
+        const { data } = await server.get<{ userId: string,token : string }>(
           "/api/valid-token"
         );
-        console.log(data)
-        setLoggedInUser(data.userId);
+        setLoggedInUser({token : data.token,userId : data.userId});
         return true;
       } catch (error) {
         console.log(error);
@@ -30,7 +29,7 @@ export default function App() {
   if (!loggedInUser) return <Join />;
   else
     return (
-      <WebsocketWrapper>
+      <WebsocketWrapper token={loggedInUser.token}>
         <ChatAppPage />
       </WebsocketWrapper>
     );
