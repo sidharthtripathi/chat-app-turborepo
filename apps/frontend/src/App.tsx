@@ -15,6 +15,7 @@ export default function App() {
         const { data } = await server.get<{ userId: string }>(
           "/api/valid-token"
         );
+        console.log(data)
         setLoggedInUser(data.userId);
         return true;
       } catch (error) {

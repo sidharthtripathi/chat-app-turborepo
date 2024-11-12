@@ -7,7 +7,7 @@ export async function validToken(req:Request,res : Response,next : NextFunction)
         return res.status(401).end()
     }
     try {
-        const payload = jwt.verify(accessToken,process.env.JWT_SECRET as string) as jwt.JwtPayload
+        const payload = jwt.verify(accessToken,process.env.JWT_SECRET!) as jwt.JwtPayload
         res.locals = {userId : payload.userId}
         next()
     } catch (error) {
