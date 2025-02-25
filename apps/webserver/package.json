@@ -3,13 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
-    "build": "npx prisma generate && npx tsc -b",
+    "build": "npx prisma generate && npx tsc",
     "start": "npx prisma db push && node build/main.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.7",

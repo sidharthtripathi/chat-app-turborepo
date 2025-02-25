@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev" : "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
-    "build": "npx tsc -b",
+    "build": "npx tsc",
     "start" : "node build"
   },
   "devDependencies": {
