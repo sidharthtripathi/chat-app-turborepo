@@ -1,5 +1,8 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import { createClient } from "redis";
 import { prisma } from "./lib/prisma";
+import cron from 'node-cron'
 const db = createClient({
   url: process.env.REDISDB_URL,
 });
@@ -82,7 +85,7 @@ async function job() {
 
 async function main() {
   await db.connect();
-  setInterval(job, 600000);
+  cron.schedule("*/15 * * * * *",job)
 }
 
 main();
