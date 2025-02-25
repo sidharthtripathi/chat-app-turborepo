@@ -1,12 +1,12 @@
-import cookie from 'cookie'
 import dotenv from 'dotenv'
+dotenv.config()
 import jwt from 'jsonwebtoken'
 import { WebSocketServer } from 'ws'
 import http from 'http'
 import { HTTPRequest,Socket } from './types/types'
 import {sentMessageSchema} from 'schema'
 import { Redis } from 'ioredis'
-dotenv.config()
+
 const pubClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
 const subClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
 const redisDB = new Redis(process.env.REDISDB_URL as string)

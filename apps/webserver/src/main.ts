@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
@@ -8,8 +10,6 @@ import { validToken } from './middlewares/validToken'
 import {SchemaFieldTypes} from 'redis'
 import { redisDB } from './lib/redis'
 import { profileRouter } from './routes/profile'
-import dotenv from 'dotenv'
-dotenv.config()
 const server = express()
 // cors
 server.use(cors({
