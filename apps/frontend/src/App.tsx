@@ -5,6 +5,7 @@ import { server } from "./lib/axios";
 import { WebsocketWrapper } from "./components/WebsocketWrapper";
 import {  useRecoilState } from "recoil";
 import { loggedInUserAtom } from "./state/profileAtom";
+import Loader from "./components/Loader";
 
 export default function App() {
   const [loggedInUser,setLoggedInUser] = useRecoilState(loggedInUserAtom);
@@ -25,7 +26,7 @@ export default function App() {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
-  if (isLoading) return <div>Loading....</div>;
+  if (isLoading) return <Loader/>;
   if (!loggedInUser) return <Join />;
   else
     return (

@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
       <RecoilNexus /> 
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Toaster />
-        <App />
+        <App/>
       </ThemeProvider>
     </RecoilRoot>
   </QueryClientProvider>
