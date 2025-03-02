@@ -29,6 +29,10 @@ server.use('/api',validToken,chatRouter)
 
 server.use('/api',profileRouter)
 
+server.use("/api/status",(req,res)=>{
+    res.send("the service is up and working")
+})
+
 async function main(){
     // creating the index for messages hash
     try { 
