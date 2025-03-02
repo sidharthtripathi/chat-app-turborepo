@@ -11,7 +11,9 @@ const pubClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
 const subClient = new Redis(process.env.REDIS_PUBSUB_URL as string)
 const redisDB = new Redis(process.env.REDISDB_URL as string)
 const connectedSocket = new Map<string,Socket>()
-const server = http.createServer()
+const server = http.createServer((req,res)=>{
+    if(req.url == "/api/status") res.end("service is up")
+})
 
 server.on('upgrade',(req:HTTPRequest,socket,head)=>{
     const accessToken = req.headers['sec-websocket-protocol']
