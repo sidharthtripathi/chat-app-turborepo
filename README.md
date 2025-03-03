@@ -51,9 +51,4 @@ npm run dev
 ```
 The application will now be accessible at the designated ports.
 
-## Contributing
-Feel free to submit issues or contribute to the project by opening pull requests.
-
-## License
-This project is licensed under the MIT License.
 
