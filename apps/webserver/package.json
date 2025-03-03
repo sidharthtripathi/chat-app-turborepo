@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
     "build": "npx prisma generate && npx tsc",
-    "start": "npx prisma db push && node build/main.js"
+    "start": "npx prisma db push && node build/main.js",
+    "prisma:generate" : "npx prisma generate",
+    "db:init" : "npx prisma db push"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
