@@ -13,7 +13,7 @@ import { profileRouter } from './routes/profile'
 const server = express()
 // cors
 server.use(cors({
-    origin : [process.env.FRONTEND_URL as string,process.env.FRONTEND_URL_DEV as string],
+    origin : [process.env.FRONTEND_URL as string],
     methods : ["GET","POST","PUT","DELETE"],
     credentials : true
 }))
@@ -62,7 +62,7 @@ async function main(){
     } catch (error) {
         console.log(error)
     }
-    const port = process.env.PORT || 3000
+    const port = 3000
     server.listen(port,()=>{
         console.log(`webser started at port: ${port}`)
     })
