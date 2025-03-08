@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
-    "build": "npx prisma generate && npx tsc",
+    "build": "npm run prisma:generate && npx tsc",
     "start": "npx prisma db push && node build/main.js",
     "prisma:generate" : "npx prisma generate",
     "db:init" : "npx prisma db push"

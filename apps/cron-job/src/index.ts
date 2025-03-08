@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
-dotenv.config()
+dotenv.config({
+  path : "../../../.env"
+})
 import { createClient } from "redis";
 import { prisma } from "./lib/prisma";
 import cron from 'node-cron'
